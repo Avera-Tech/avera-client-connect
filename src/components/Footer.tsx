@@ -2,15 +2,26 @@ import logoImg from "@/assets/avera-logo.png";
 
 const Footer = () => {
   return (
-    <footer className="hero-gradient py-12 border-t border-primary/10">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <img src={logoImg} alt="Avera" className="h-8 w-8" />
-            <span className="font-display text-xl font-bold text-hero-foreground">Avera</span>
+    <footer className="hero-gradient py-16 border-t border-primary/10 relative overflow-hidden">
+      <div className="absolute inset-0 mesh-gradient opacity-20" />
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-3">
+            <img src={logoImg} alt="Avera" className="h-10" />
           </div>
-          <p className="text-hero-foreground/50 text-sm">
-            © {new Date().getFullYear()} Avera. Todos os direitos reservados.
+          <div className="flex items-center gap-8">
+            {["Início", "Soluções", "Sobre", "Contato"].map((link) => (
+              <a
+                key={link}
+                href={`#${link.toLowerCase().replace("í", "hero").replace("oluções", "features").replace("obre", "about").replace("ontato", "contact")}`}
+                className="text-sm text-hero-foreground/40 hover:text-primary transition-colors"
+              >
+                {link}
+              </a>
+            ))}
+          </div>
+          <p className="text-hero-foreground/30 text-sm">
+            © {new Date().getFullYear()} Avera
           </p>
         </div>
       </div>
