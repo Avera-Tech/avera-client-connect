@@ -50,7 +50,7 @@ const Navbar = () => {
             </a>
           ))}
           <div className="ml-4">
-            <Button variant="hero" size="sm" className="rounded-full px-6">
+            <Button variant="hero" size="sm" className="rounded-full px-6" onClick={() => navigate("/login")}>
               Área do Cliente
             </Button>
           </div>
