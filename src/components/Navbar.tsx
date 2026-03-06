@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import logoImg from "@/assets/avera-logo.png";
 
 const navLinks = [
@@ -14,6 +15,7 @@ const navLinks = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -48,7 +50,7 @@ const Navbar = () => {
             </a>
           ))}
           <div className="ml-4">
-            <Button variant="hero" size="sm" className="rounded-full px-6">
+            <Button variant="hero" size="sm" className="rounded-full px-6" onClick={() => navigate("/login")}>
               Área do Cliente
             </Button>
           </div>
