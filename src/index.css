@@ -40,14 +40,14 @@
     --hero-foreground: 140 20% 96%;
     --glow: 145 60% 45%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 195 100% 42%;
+    --sidebar-background: 140 10% 97%;
+    --sidebar-foreground: 150 20% 20%;
+    --sidebar-primary: 145 45% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 94%;
-    --sidebar-accent-foreground: 220 25% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 195 100% 42%;
+    --sidebar-accent: 140 15% 94%;
+    --sidebar-accent-foreground: 150 30% 15%;
+    --sidebar-border: 140 12% 90%;
+    --sidebar-ring: 145 45% 35%;
 
     font-family: 'Inter', sans-serif;
   }
