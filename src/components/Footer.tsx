@@ -10,13 +10,18 @@ const Footer = () => {
             <img src={logoImg} alt="Avera" className="h-10" />
           </div>
           <div className="flex items-center gap-8">
-            {["Início", "Soluções", "Sobre", "Contato"].map((link) => (
+            {[
+              { label: "Início", href: "#hero" },
+              { label: "Soluções", href: "#features" },
+              { label: "Sobre", href: "#about" },
+              { label: "Contato", href: "#contact" },
+            ].map((link) => (
               <a
-                key={link}
-                href={`#${link.toLowerCase().replace("í", "hero").replace("oluções", "features").replace("obre", "about").replace("ontato", "contact")}`}
+                key={link.label}
+                href={link.href}
                 className="text-sm text-hero-foreground/40 hover:text-primary transition-colors"
               >
-                {link}
+                {link.label}
               </a>
             ))}
           </div>
