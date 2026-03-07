@@ -8,12 +8,13 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-3">
             <img src={logoImg} alt="Avera" className="h-10" />
+            <span className="text-hero-foreground/40 text-sm hidden sm:block">Plataforma de Gestão Esportiva</span>
           </div>
           <div className="flex items-center gap-8">
             {[
               { label: "Início", href: "#hero" },
-              { label: "Soluções", href: "#features" },
-              { label: "Sobre", href: "#about" },
+              { label: "Funcionalidades", href: "#features" },
+              { label: "Por que Avera", href: "#about" },
               { label: "Contato", href: "#contact" },
             ].map((link) => (
               <a
