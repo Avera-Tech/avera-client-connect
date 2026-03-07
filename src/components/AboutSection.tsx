@@ -2,23 +2,22 @@ import { CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 const highlights = [
-  "Mais de 10 anos de experiência no mercado",
-  "Equipe multidisciplinar de especialistas",
-  "Metodologias ágeis e entregas contínuas",
-  "Suporte dedicado e acompanhamento pós-entrega",
+  "Agendamento 100% online, sem ligações",
+  "Redução de até 70% nos no-shows",
+  "Cobranças automáticas e controle de inadimplência",
+  "Integração com WellHub e TotalPass (em breve)",
 ];
 
 const stats = [
-  { number: "200+", label: "Projetos entregues" },
-  { number: "50+", label: "Clientes ativos" },
-  { number: "99.9%", label: "Uptime garantido" },
-  { number: "24/7", label: "Suporte técnico" },
+  { number: "24/7", label: "Agendamento disponível" },
+  { number: "70%", label: "Menos no-shows" },
+  { number: "100%", label: "Controle financeiro" },
+  { number: "0", label: "Planilhas necessárias" },
 ];
 
 const AboutSection = () => {
   return (
     <section id="about" className="py-32 hero-gradient relative overflow-hidden">
-      {/* Floating orbs */}
       <div className="absolute top-20 right-[20%] w-64 h-64 rounded-full bg-primary/5 blur-[80px] animate-float" />
       <div className="absolute bottom-20 left-[10%] w-48 h-48 rounded-full bg-accent/5 blur-[60px] animate-float-delayed" />
 
@@ -31,16 +30,15 @@ const AboutSection = () => {
             transition={{ duration: 0.7 }}
           >
             <span className="inline-block text-primary font-semibold text-sm tracking-[0.2em] uppercase mb-4 px-4 py-1.5 rounded-full bg-primary/8 border border-primary/15">
-              Sobre nós
+              Por que a Avera
             </span>
             <h2 className="font-display text-4xl md:text-6xl font-extrabold text-hero-foreground mt-4 mb-6 tracking-tight leading-[1.05]">
-              Inovação com{" "}
-              <span className="text-gradient">propósito</span>
+              Menos gestão manual,{" "}
+              <span className="text-gradient">mais resultados</span>
             </h2>
             <p className="text-hero-foreground/50 text-lg leading-relaxed mb-10 font-light">
-              A Avera nasceu com a missão de democratizar o acesso à tecnologia de ponta. 
-              Acreditamos que toda empresa, independente do tamanho, merece soluções digitais 
-              que realmente fazem diferença nos resultados.
+              A Avera foi criada por quem vive o dia a dia dos centros esportivos. 
+              Automatize o que é repetitivo e foque no que importa: seus alunos e sua receita.
             </p>
             <div className="space-y-5">
               {highlights.map((item, i) => (

@@ -7,8 +7,8 @@ import logoImg from "@/assets/avera-logo.png";
 
 const navLinks = [
   { label: "Início", href: "#hero" },
-  { label: "Soluções", href: "#features" },
-  { label: "Sobre", href: "#about" },
+  { label: "Funcionalidades", href: "#features" },
+  { label: "Por que Avera", href: "#about" },
   { label: "Contato", href: "#contact" },
 ];
 
@@ -86,7 +86,7 @@ const Navbar = () => {
                   {link.label}
                 </motion.a>
               ))}
-              <Button variant="hero" size="sm" className="mt-3 w-full rounded-full">
+              <Button variant="hero" size="sm" className="mt-3 w-full rounded-full" onClick={() => navigate("/login")}>
                 Área do Cliente
               </Button>
             </div>

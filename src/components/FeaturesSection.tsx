@@ -1,19 +1,42 @@
-import { Cloud, Code, Shield, BarChart3, Cpu, Globe } from "lucide-react";
+import { Calendar, LayoutGrid, Users, CreditCard, Eye, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 
 const features = [
-  { icon: Code, title: "Desenvolvimento Sob Medida", description: "Software personalizado para as necessidades específicas do seu negócio." },
-  { icon: Cloud, title: "Soluções em Nuvem", description: "Infraestrutura escalável e segura hospedada na nuvem." },
-  { icon: Shield, title: "Segurança Avançada", description: "Proteção de dados com as melhores práticas do mercado." },
-  { icon: BarChart3, title: "Business Intelligence", description: "Dashboards e relatórios para decisões baseadas em dados." },
-  { icon: Cpu, title: "Automação de Processos", description: "Automatize tarefas repetitivas e aumente a produtividade." },
-  { icon: Globe, title: "Integração de Sistemas", description: "Conecte diferentes plataformas em um ecossistema unificado." },
+  {
+    icon: Calendar,
+    title: "Agendamento Online",
+    description: "Reservas recorrentes por quadra e treinador. Sistema inteligente que evita conflitos, disponível 24/7.",
+  },
+  {
+    icon: LayoutGrid,
+    title: "Controle de Quadras",
+    description: "Visão panorâmica da ocupação. Gerencie bloqueios para manutenção, aulas ou eventos com poucos cliques.",
+  },
+  {
+    icon: Users,
+    title: "Gestão de Alunos",
+    description: "Controle completo de turmas, histórico de presença, níveis de habilidade e evolução dos alunos.",
+  },
+  {
+    icon: CreditCard,
+    title: "Financeiro Integrado",
+    description: "Gestão de planos, mensalidades recorrentes e cobranças avulsas. Relatórios de receita por período.",
+  },
+  {
+    icon: Eye,
+    title: "Calendário Unificado",
+    description: "Dashboard visual com ocupação em tempo real. Identifique horários vagos e maximize a receita.",
+  },
+  {
+    icon: Bell,
+    title: "Confirmações e Lembretes",
+    description: "Reduza o no-show com lembretes automáticos por e-mail e notificações no app para agendamentos.",
+  },
 ];
 
 const FeaturesSection = () => {
   return (
     <section id="features" className="py-32 bg-background relative overflow-hidden">
-      {/* Subtle mesh */}
       <div className="absolute inset-0 mesh-gradient opacity-50" />
 
       <div className="container mx-auto px-6 relative z-10">
@@ -25,13 +48,13 @@ const FeaturesSection = () => {
           className="text-center mb-20"
         >
           <span className="inline-block text-primary font-semibold text-sm tracking-[0.2em] uppercase mb-4 px-4 py-1.5 rounded-full bg-primary/8 border border-primary/15">
-            Soluções
+            Funcionalidades
           </span>
           <h2 className="font-display text-4xl md:text-6xl font-extrabold text-foreground mt-4 mb-5 tracking-tight">
-            O que fazemos de melhor
+            Tudo em um só lugar
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-light">
-            Combinamos tecnologia de ponta com expertise de negócios para entregar resultados reais.
+            Da reserva de quadras ao controle financeiro — gerencie todo o seu centro esportivo numa única plataforma.
           </p>
         </motion.div>
 
