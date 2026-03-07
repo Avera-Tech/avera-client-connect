@@ -1,14 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Calendar, Users, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import heroBg from "@/assets/hero-bg.jpg";
+
+const highlights = [
+  { icon: Calendar, label: "Agendamento Online" },
+  { icon: Users, label: "Gestão de Alunos" },
+  { icon: BarChart3, label: "Controle Financeiro" },
+];
 
 const HeroSection = () => {
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background layers */}
       <div className="absolute inset-0 bg-cover bg-center scale-110" style={{ backgroundImage: `url(${heroBg})` }} />
-      <div className="absolute inset-0 hero-gradient opacity-85" />
+      <div className="absolute inset-0 hero-gradient opacity-90" />
       <div className="absolute inset-0 mesh-gradient" />
 
       {/* Floating orbs */}
@@ -31,44 +37,63 @@ const HeroSection = () => {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass mb-10"
           >
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-sm text-primary font-medium tracking-wide">Tecnologia que transforma negócios</span>
+            <span className="text-sm text-primary font-medium tracking-wide">Plataforma de Gestão Esportiva</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="font-display text-5xl sm:text-6xl md:text-8xl font-extrabold text-hero-foreground mb-8 leading-[0.95] tracking-tight"
+            className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold text-hero-foreground mb-8 leading-[0.95] tracking-tight"
           >
-            Soluções que
+            Gestão do seu
             <br />
-            <span className="text-gradient">impulsionam</span>
-            <br />
-            resultados
+            <span className="text-gradient">Centro Esportivo</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-lg md:text-xl text-hero-foreground/50 mb-12 max-w-xl mx-auto leading-relaxed font-light"
+            className="text-lg md:text-xl text-hero-foreground/50 mb-12 max-w-2xl mx-auto leading-relaxed font-light"
           >
-            Software sob medida e soluções SaaS que aceleram a transformação digital da sua empresa.
+            Aumente a ocupação, reduza o no-show e tenha controle total de alunos e financeiro em um só lugar.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
           >
-            <Button variant="hero" size="lg" className="text-base px-8 rounded-full h-14 text-base">
-              Fale Conosco
+            <Button variant="hero" size="lg" className="text-base px-8 rounded-full h-14">
+              Agendar Demonstração
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button variant="heroOutline" size="lg" className="text-base px-8 rounded-full h-14">
-              Nossas Soluções
+              Conhecer Funcionalidades
             </Button>
+          </motion.div>
+
+          {/* Feature pills */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
+            className="flex flex-wrap items-center justify-center gap-3"
+          >
+            {highlights.map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.1 + i * 0.1 }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full glass text-hero-foreground/70 text-sm font-medium"
+              >
+                <item.icon className="w-4 h-4 text-primary" />
+                {item.label}
+              </motion.div>
+            ))}
           </motion.div>
         </div>
 
