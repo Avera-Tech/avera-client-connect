@@ -58,9 +58,9 @@ const ContactSection = () => {
             className="lg:col-span-2 space-y-6"
           >
             {[
-              { icon: Mail, label: "Email", value: "contato@avera.com.br" },
-              { icon: Phone, label: "Telefone", value: "+55 (11) 9999-9999" },
-              { icon: MapPin, label: "Endereço", value: "São Paulo, SP - Brasil" },
+              { icon: Mail, label: "Email", value: "contato@averatech.com.br" },
+              { icon: Phone, label: "Telefone", value: "+55 (21) 969167953" },
+              { icon: MapPin, label: "Endereço", value: "Niterói, RJ - Brasil" },
             ].map((info) => (
               <div key={info.label} className="flex items-start gap-4 p-5 rounded-2xl bg-card border border-border/60 hover:border-primary/20 transition-all duration-300">
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/15 to-accent/10 flex items-center justify-center flex-shrink-0">

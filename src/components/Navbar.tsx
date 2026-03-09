@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import logoImg from "@/assets/avera-logo.png";
+import logoImg from "@/assets/avera-logo-white.svg";
 
 const navLinks = [
   { label: "Início", href: "#hero" },
@@ -49,11 +49,12 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <div className="ml-4">
+          {/*<div className="ml-4">
             <Button variant="hero" size="sm" className="rounded-full px-6" onClick={() => navigate("/login")}>
               Área do Cliente
             </Button>
           </div>
+          */}
         </div>
 
         <button
@@ -86,9 +87,10 @@ const Navbar = () => {
                   {link.label}
                 </motion.a>
               ))}
-              <Button variant="hero" size="sm" className="mt-3 w-full rounded-full" onClick={() => navigate("/login")}>
+               {/*<Button variant="hero" size="sm" className="mt-3 w-full rounded-full" onClick={() => navigate("/login")}>
                 Área do Cliente
               </Button>
+              */}
             </div>
           </motion.div>
         )}

@@ -1,4 +1,4 @@
-import logoImg from "@/assets/avera-logo.png";
+import logoImg from "@/assets/avera-logo-white.svg";
 
 const Footer = () => {
   return (
@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-3">
             <img src={logoImg} alt="Avera" className="h-10" />
-            <span className="text-hero-foreground/40 text-sm hidden sm:block">Plataforma de Gestão Esportiva</span>
+            {/*<span className="text-hero-foreground/40 text-sm hidden sm:block">Plataforma de Gestão Esportiva</span>*/}
           </div>
           <div className="flex items-center gap-8">
             {[
