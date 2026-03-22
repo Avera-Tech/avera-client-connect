@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { formatPhone, isEmailValid, isPhoneValid, isPasswordStrong } from "@/utils/validation";
 import { useStepForm } from "@/hooks/useStepForm";
 import { FieldLabel, FieldError, PasswordStrength, getInputClass } from "./SignupUI";
@@ -11,13 +12,17 @@ interface StepAdministradorProps extends StepNavProps {
   updateField: (field: keyof AdministradorFormData, value: string) => void;
   showPassword: boolean;
   setShowPassword: (v: boolean) => void;
+  isEmailVerified: boolean;
 }
 
 type AdminErrors = { nome?: string; email?: string; telefone?: string; senha?: string };
 
 const StepAdministrador = ({
-  formData, updateField, showPassword, setShowPassword, nextStep, prevStep,
+  formData, updateField, showPassword, setShowPassword, isEmailVerified, nextStep, prevStep,
 }: StepAdministradorProps) => {
+  const [emailApiError, setEmailApiError] = useState<string | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
+
   const { errors, touched, touch, clearError, validate } = useStepForm<AdminErrors>(
     () => {
       const e: AdminErrors = {};
@@ -74,11 +79,11 @@ const StepAdministrador = ({
             type="email"
             placeholder="seu@email.com"
             value={formData.email}
-            onChange={(e) => { updateField("email", e.target.value); clearError("email"); }}
+            onChange={(e) => { updateField("email", e.target.value); clearError("email"); setEmailApiError(undefined); }}
             onBlur={() => touch("email")}
-            className={getInputClass(!!errors.email, !!isValid.email)}
+            className={getInputClass(!!errors.email || !!emailApiError, !!isValid.email)}
           />
-          <FieldError message={errors.email} />
+          <FieldError message={errors.email ?? emailApiError} />
         </div>
 
         <div>
@@ -121,8 +126,28 @@ const StepAdministrador = ({
         <Button variant="outline" onClick={prevStep} className="flex-1 h-12 rounded-xl font-semibold gap-2">
           <ArrowLeft className="w-4 h-4" /> Voltar
         </Button>
-        <Button onClick={() => { if (validate()) nextStep(); }} className="flex-1 h-12 rounded-xl font-semibold gap-2">
-          Continuar <ArrowRight className="w-4 h-4" />
+        <Button
+          disabled={isLoading}
+          onClick={async () => {
+            if (!validate()) return;
+            if (isEmailVerified) { nextStep(); return; }
+            setIsLoading(true);
+            const response = await fetch("http://localhost:3100/signup/send-otp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: formData.email }),
+            });
+            setIsLoading(false);
+            if (!response.ok) {
+              const data = await response.json().catch(() => null);
+              setEmailApiError(data?.message ?? "Email já cadastrado.");
+              return;
+            }
+            nextStep();
+          }}
+          className="flex-1 h-12 rounded-xl font-semibold gap-2"
+        >
+          {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</> : <>Continuar <ArrowRight className="w-4 h-4" /></>}
         </Button>
       </div>
     </div>
