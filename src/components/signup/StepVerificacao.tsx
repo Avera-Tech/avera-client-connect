@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
@@ -13,10 +13,47 @@ interface StepVerificacaoProps extends StepNavProps {
   setIsEmailVerified: (v: boolean) => void;
 }
 
+const EXPIRY_SECONDS = 10 * 60;
+
 const StepVerificacao = ({ formData, updateField, isEmailVerified, setIsEmailVerified, nextStep, prevStep }: StepVerificacaoProps) => {
   const [error, setError] = useState<string | undefined>();
   const [touched, setTouched] = useState(() => isCodigoValid(formData.codigo));
   const [isVerifying, setIsVerifying] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(EXPIRY_SECONDS);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current!);
+  }, []);
+
+  const resetTimer = () => {
+    clearInterval(intervalRef.current!);
+    setTimeLeft(EXPIRY_SECONDS);
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
 
   const isValid = touched && !error && isCodigoValid(formData.codigo);
 
@@ -81,8 +118,14 @@ const StepVerificacao = ({ formData, updateField, isEmailVerified, setIsEmailVer
           <FieldError message={error} />
         </div>
 
-        <p className="text-xs text-muted-foreground text-center">
-          Não recebeu?{" "}
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>
+            {timeLeft > 0 ? (
+              <>Expira em <span className={`font-mono font-semibold ${timeLeft <= 60 ? "text-destructive" : "text-foreground"}`}>{formatTime(timeLeft)}</span></>
+            ) : (
+              <span className="text-destructive font-semibold">Código expirado</span>
+            )}
+          </span>
           <button
             onClick={() => {
               fetch("http://localhost:3100/signup/resend-otp", {
@@ -90,12 +133,13 @@ const StepVerificacao = ({ formData, updateField, isEmailVerified, setIsEmailVer
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: formData.email }),
               });
+              resetTimer();
             }}
             className="text-primary font-semibold hover:underline"
           >
             Reenviar código
           </button>
-        </p>
+        </div>
       </div>
 
       <div className="flex gap-3">
