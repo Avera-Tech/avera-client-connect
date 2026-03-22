@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { planos } from "./StepPlano";
 import type { ConfirmacaoFormData, StepNavProps } from "@/types";
 
@@ -7,9 +7,11 @@ interface StepConfirmacaoProps extends StepNavProps {
   formData: ConfirmacaoFormData;
   selectedPlano: number;
   handleFinish: () => void;
+  isSubmitting: boolean;
+  submitError: string | null;
 }
 
-const StepConfirmacao = ({ formData, selectedPlano, handleFinish, prevStep }: StepConfirmacaoProps) => (
+const StepConfirmacao = ({ formData, selectedPlano, handleFinish, isSubmitting, submitError, prevStep }: StepConfirmacaoProps) => (
   <div className="space-y-6 text-center">
     <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center mx-auto">
       <CheckCircle2 className="w-8 h-8 text-primary" />
@@ -40,12 +42,20 @@ const StepConfirmacao = ({ formData, selectedPlano, handleFinish, prevStep }: St
       </div>
     </div>
 
+    {submitError && (
+      <p className="text-sm text-destructive text-center">{submitError}</p>
+    )}
+
     <div className="flex gap-3">
-      <Button variant="outline" onClick={prevStep} className="flex-1 h-12 rounded-xl font-semibold gap-2">
+      <Button variant="outline" onClick={prevStep} disabled={isSubmitting} className="flex-1 h-12 rounded-xl font-semibold gap-2">
         <ArrowLeft className="w-4 h-4" /> Voltar
       </Button>
-      <Button onClick={handleFinish} className="flex-1 h-12 rounded-xl font-semibold text-base gap-2">
-        Acessar o painel <ArrowRight className="w-4 h-4" />
+      <Button onClick={handleFinish} disabled={isSubmitting} className="flex-1 h-12 rounded-xl font-semibold text-base gap-2">
+        {isSubmitting ? (
+          <><Loader2 className="w-4 h-4 animate-spin" /> Criando conta...</>
+        ) : (
+          <>Acessar o painel <ArrowRight className="w-4 h-4" /></>
+        )}
       </Button>
     </div>
   </div>

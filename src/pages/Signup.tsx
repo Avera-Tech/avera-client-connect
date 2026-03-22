@@ -7,7 +7,7 @@ import SignupStepper from "@/components/signup/SignupStepper";
 import StepEmpresa from "@/components/signup/StepEmpresa";
 import StepAdministrador from "@/components/signup/StepAdministrador";
 import StepVerificacao from "@/components/signup/StepVerificacao";
-import StepPlano from "@/components/signup/StepPlano";
+import StepPlano, { planos } from "@/components/signup/StepPlano";
 import StepConfirmacao from "@/components/signup/StepConfirmacao";
 import type { SignupFormData } from "@/types";
 
@@ -30,14 +30,53 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedPlano, setSelectedPlano] = useState(1);
   const [formData, setFormData] = useState<SignupFormData>(initialFormData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const navigate = useNavigate();
 
-  const updateField = (field: keyof SignupFormData, value: string) =>
+  const updateField = (field: keyof SignupFormData, value: string) => {
+    if (field === "email") setIsEmailVerified(false);
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const nextStep = () => setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
   const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 0));
-  const handleFinish = () => navigate("/login");
+
+  const handleFinish = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const payload = {
+        cnpj: formData.cnpj,
+        segment: formData.segmento,
+        city: formData.cidade,
+        courts_count: formData.qtdQuadras,
+        plan: planos[selectedPlano].nome.toLowerCase(),
+        name: formData.nome,
+        email: formData.email,
+        phone: formData.telefone,
+        password: formData.senha,
+      };
+
+      const response = await fetch("http://localhost:3100/signup/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.message ?? "Erro ao criar conta. Tente novamente.");
+      }
+
+      navigate("/login");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Erro ao criar conta. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -77,6 +116,7 @@ const Signup = () => {
                   updateField={updateField}
                   showPassword={showPassword}
                   setShowPassword={setShowPassword}
+                  isEmailVerified={isEmailVerified}
                   nextStep={nextStep}
                   prevStep={prevStep}
                 />
@@ -85,6 +125,8 @@ const Signup = () => {
                 <StepVerificacao
                   formData={formData}
                   updateField={updateField}
+                  isEmailVerified={isEmailVerified}
+                  setIsEmailVerified={setIsEmailVerified}
                   nextStep={nextStep}
                   prevStep={prevStep}
                 />
@@ -102,6 +144,8 @@ const Signup = () => {
                   formData={formData}
                   selectedPlano={selectedPlano}
                   handleFinish={handleFinish}
+                  isSubmitting={isSubmitting}
+                  submitError={submitError}
                   nextStep={nextStep}
                   prevStep={prevStep}
                 />

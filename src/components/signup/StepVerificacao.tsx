@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { isCodigoValid } from "@/utils/validation";
 import { FieldLabel, FieldError, getInputClass } from "./SignupUI";
 import type { VerificacaoFormData, StepNavProps } from "@/types";
@@ -9,23 +9,48 @@ import type { VerificacaoFormData, StepNavProps } from "@/types";
 interface StepVerificacaoProps extends StepNavProps {
   formData: VerificacaoFormData;
   updateField: (field: keyof VerificacaoFormData, value: string) => void;
+  isEmailVerified: boolean;
+  setIsEmailVerified: (v: boolean) => void;
 }
 
-const StepVerificacao = ({ formData, updateField, nextStep, prevStep }: StepVerificacaoProps) => {
+const StepVerificacao = ({ formData, updateField, isEmailVerified, setIsEmailVerified, nextStep, prevStep }: StepVerificacaoProps) => {
   const [error, setError] = useState<string | undefined>();
   const [touched, setTouched] = useState(() => isCodigoValid(formData.codigo));
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const isValid = touched && !error && isCodigoValid(formData.codigo);
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (isEmailVerified) { nextStep(); return; }
     setTouched(true);
     if (!isCodigoValid(formData.codigo)) {
       setError("Digite o código de 6 dígitos");
       return;
     }
     setError(undefined);
-    nextStep();
+    setIsVerifying(true);
+    try {
+      const response = await fetch("http://localhost:3100/signup/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, code: formData.codigo }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.message ?? "Código inválido. Tente novamente.");
+        return;
+      }
+
+      setIsEmailVerified(true);
+      nextStep();
+    } catch {
+      setError("Erro de conexão. Tente novamente.");
+    } finally {
+      setIsVerifying(false);
+    }
   };
+
 
   return (
     <div className="space-y-6">
@@ -58,16 +83,31 @@ const StepVerificacao = ({ formData, updateField, nextStep, prevStep }: StepVeri
 
         <p className="text-xs text-muted-foreground text-center">
           Não recebeu?{" "}
-          <button className="text-primary font-semibold hover:underline">Reenviar código</button>
+          <button
+            onClick={() => {
+              fetch("http://localhost:3100/signup/resend-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: formData.email }),
+              });
+            }}
+            className="text-primary font-semibold hover:underline"
+          >
+            Reenviar código
+          </button>
         </p>
       </div>
 
       <div className="flex gap-3">
-        <Button variant="outline" onClick={prevStep} className="flex-1 h-12 rounded-xl font-semibold gap-2">
+        <Button variant="outline" onClick={prevStep} disabled={isVerifying} className="flex-1 h-12 rounded-xl font-semibold gap-2">
           <ArrowLeft className="w-4 h-4" /> Voltar
         </Button>
-        <Button onClick={handleNext} className="flex-1 h-12 rounded-xl font-semibold gap-2">
-          Verificar <ArrowRight className="w-4 h-4" />
+        <Button onClick={handleNext} disabled={isVerifying} className="flex-1 h-12 rounded-xl font-semibold gap-2">
+          {isVerifying ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Verificando...</>
+          ) : (
+            <>Verificar <ArrowRight className="w-4 h-4" /></>
+          )}
         </Button>
       </div>
     </div>
