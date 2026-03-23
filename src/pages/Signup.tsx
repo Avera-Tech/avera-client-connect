@@ -28,7 +28,7 @@ const initialFormData: SignupFormData = {
 const Signup = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedPlano, setSelectedPlano] = useState(1);
+  const [selectedPlano, setSelectedPlano] = useState(2);
   const [formData, setFormData] = useState<SignupFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
