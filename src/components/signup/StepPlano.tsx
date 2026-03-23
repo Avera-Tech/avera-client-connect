@@ -115,6 +115,11 @@ const StepPlano = ({ selectedPlano, setSelectedPlano, nextStep, prevStep }: Step
                 </span>
               ))}
             </div>
+            {(plano as any).semCartao && (
+              <p className="text-[11px] text-primary font-medium mt-2">
+                💳 Cartão de crédito não necessário agora
+              </p>
+            )}
           </button>
         ))}
       </div>
