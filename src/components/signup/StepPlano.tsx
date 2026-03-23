@@ -3,10 +3,24 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 
 export const planos = [
   {
+    nome: "Teste Grátis",
+    preco: "R$ 0",
+    periodo: "/14 dias",
+    descricao: "Experimente sem compromisso, sem cartão de crédito",
+    semCartao: true,
+    recursos: [
+      "Até 2 quadras",
+      "Agendamento online",
+      "Gestão básica de alunos",
+      "14 dias grátis",
+    ],
+  },
+  {
     nome: "Starter",
     preco: "R$ 197",
     periodo: "/mês",
     descricao: "Para centros esportivos iniciando a digitalização",
+    semCartao: true,
     recursos: [
       "Até 5 quadras",
       "Agendamento online",
@@ -21,6 +35,7 @@ export const planos = [
     periodo: "/mês",
     destaque: true,
     descricao: "Para centros em crescimento que buscam eficiência",
+    semCartao: true,
     recursos: [
       "Até 15 quadras",
       "Tudo do Starter",
@@ -45,7 +60,6 @@ export const planos = [
     ],
   },
 ];
-
 interface StepPlanoProps {
   selectedPlano: number;
   setSelectedPlano: (i: number) => void;
@@ -101,6 +115,11 @@ const StepPlano = ({ selectedPlano, setSelectedPlano, nextStep, prevStep }: Step
                 </span>
               ))}
             </div>
+            {(plano as any).semCartao && (
+              <p className="text-[11px] text-primary font-medium mt-2">
+                💳 Cartão de crédito não necessário agora
+              </p>
+            )}
           </button>
         ))}
       </div>
