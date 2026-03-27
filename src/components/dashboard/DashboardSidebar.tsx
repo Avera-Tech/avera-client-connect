@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
+  Users,
   CreditCard,
   Zap,
   Settings,
@@ -10,8 +11,9 @@ import {
 import logoImg from "@/assets/avera-logo.png";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Início", path: "/dashboard" },
-  { icon: CreditCard, label: "Pagamentos", path: "/dashboard/pagamentos" },
+  { icon: LayoutDashboard, label: "Visão Geral", path: "/dashboard" },
+  { icon: Users, label: "Clientes", path: "/dashboard/clientes" },
+  { icon: CreditCard, label: "Cobranças", path: "/dashboard/cobrancas" },
   { icon: Zap, label: "Funcionalidades", path: "/dashboard/funcionalidades" },
   { icon: Settings, label: "Configurações", path: "/dashboard/configuracoes" },
 ];
