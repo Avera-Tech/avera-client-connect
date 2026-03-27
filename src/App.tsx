@@ -7,7 +7,8 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-import Pagamentos from "./pages/Pagamentos";
+import Clientes from "./pages/Clientes";
+import Cobrancas from "./pages/Cobrancas";
 import Funcionalidades from "./pages/Funcionalidades";
 import NotFound from "./pages/NotFound";
 
