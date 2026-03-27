@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
+  Users,
   CreditCard,
   Zap,
   Settings,
