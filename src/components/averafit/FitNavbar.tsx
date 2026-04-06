@@ -9,6 +9,7 @@ const navLinks = [
   { label: "Início", href: "#hero" },
   { label: "Esportes", href: "#sports" },
   { label: "Funcionalidades", href: "#features" },
+  { label: "O Sistema", href: "#system" },
   { label: "Planos", href: "#pricing" },
   { label: "Por que AveraFit", href: "#about" },
   { label: "Contato", href: "#contact" },
