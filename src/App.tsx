@@ -11,6 +11,7 @@ import Clientes from "./pages/Clientes";
 import Cobrancas from "./pages/Cobrancas";
 import Funcionalidades from "./pages/Funcionalidades";
 import NotFound from "./pages/NotFound";
+import AveraFit from "./pages/AveraFit";
 
 const queryClient = new QueryClient();
 
