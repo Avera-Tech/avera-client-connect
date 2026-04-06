@@ -3,6 +3,7 @@ import FitHeroSection from "@/components/averafit/FitHeroSection";
 import FitSportsSection from "@/components/averafit/FitSportsSection";
 import FitProblemsSection from "@/components/averafit/FitProblemsSection";
 import FitFeaturesSection from "@/components/averafit/FitFeaturesSection";
+import FitSystemPreviewSection from "@/components/averafit/FitSystemPreviewSection";
 import FitHowItWorksSection from "@/components/averafit/FitHowItWorksSection";
 import FitPricingSection from "@/components/averafit/FitPricingSection";
 import FitTestimonialsSection from "@/components/averafit/FitTestimonialsSection";
@@ -18,6 +19,7 @@ const AveraFit = () => {
       <FitSportsSection />
       <FitProblemsSection />
       <FitFeaturesSection />
+      <FitSystemPreviewSection />
       <FitHowItWorksSection />
       <FitStatsSection />
       <FitPricingSection />
