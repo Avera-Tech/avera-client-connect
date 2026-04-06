@@ -11,7 +11,7 @@ const features = [
 
 const FitSystemPreviewSection = () => {
   return (
-    <section className="py-32 bg-background relative overflow-hidden">
+    <section id="system" className="py-32 bg-background relative overflow-hidden">
       <div className="absolute inset-0 mesh-gradient opacity-30" />
 
       <div className="container mx-auto px-6 relative z-10">
