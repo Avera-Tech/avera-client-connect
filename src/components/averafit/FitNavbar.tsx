@@ -53,11 +53,11 @@ const FitNavbar = () => {
               {link.label}
             </a>
           ))}
-          <div className="ml-4">
+          {/*<div className="ml-4">
             <Button variant="hero" size="sm" className="rounded-full px-6" onClick={() => navigate("/signup")}>
               Teste Grátis
             </Button>
-          </div>
+          </div>*/}
         </div>
 
         <button
