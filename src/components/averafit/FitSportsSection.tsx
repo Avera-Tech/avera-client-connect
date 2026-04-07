@@ -7,7 +7,7 @@ import futevoleiImg from "@/assets/sport-futevolei.jpg";
 const sports = [
   { name: "Tennis", image: tennisImg, description: "Quadras de saibro, hard court e grama sintética" },
   { name: "Beach Tennis", image: beachTennisImg, description: "Quadras de areia com gestão completa de horários" },
-  { name: "Soccer", image: soccerImg, description: "Campos society e futsal indoor com reservas online" },
+  { name: "Futebol", image: soccerImg, description: "Campos society e futsal indoor com reservas online" },
   { name: "Futevôlei", image: futevoleiImg, description: "Quadras de areia com controle de ocupação" },
 ];
 
