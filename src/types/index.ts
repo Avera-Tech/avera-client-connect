@@ -5,6 +5,7 @@ export interface EmpresaFormData {
   segmento: string;
   cidade: string;
   qtdQuadras: string;
+  nomeEmpresa: string;
 }
 
 export interface AdministradorFormData {

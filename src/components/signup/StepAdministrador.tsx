@@ -13,12 +13,14 @@ interface StepAdministradorProps extends StepNavProps {
   showPassword: boolean;
   setShowPassword: (v: boolean) => void;
   isEmailVerified: boolean;
+  companyName: string;  // ← novo
 }
 
 type AdminErrors = { nome?: string; email?: string; telefone?: string; senha?: string };
 
 const StepAdministrador = ({
-  formData, updateField, showPassword, setShowPassword, isEmailVerified, nextStep, prevStep,
+  formData, updateField, showPassword, setShowPassword,
+  isEmailVerified, nextStep, prevStep, companyName,
 }: StepAdministradorProps) => {
   const [emailApiError, setEmailApiError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
@@ -45,10 +47,10 @@ const StepAdministrador = ({
   );
 
   const isValid = {
-    nome: touched.nome && !errors.nome && !!formData.nome.trim(),
-    email: touched.email && !errors.email && isEmailValid(formData.email),
+    nome:     touched.nome     && !errors.nome     && !!formData.nome.trim(),
+    email:    touched.email    && !errors.email    && isEmailValid(formData.email),
     telefone: touched.telefone && !errors.telefone && isPhoneValid(formData.telefone),
-    senha: touched.senha && !errors.senha && isPasswordStrong(formData.senha),
+    senha:    touched.senha    && !errors.senha    && isPasswordStrong(formData.senha),
   };
 
   return (
@@ -57,7 +59,9 @@ const StepAdministrador = ({
         <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground tracking-tight">
           Dados do Administrador
         </h2>
-        <p className="text-muted-foreground text-xs sm:text-sm mt-1">Quem será o responsável pela conta</p>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+          Quem será o responsável pela conta
+        </p>
       </div>
 
       <div className="space-y-4">
@@ -132,22 +136,28 @@ const StepAdministrador = ({
             if (!validate()) return;
             if (isEmailVerified) { nextStep(); return; }
             setIsLoading(true);
-            const response = await fetch("http://localhost:3100/signup/send-otp", {
+            const response = await fetch(`http://localhost:3100/signup/send-otp`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: formData.email }),
+              body: JSON.stringify({
+                email:        formData.email,
+                company_name: companyName,  // ← enviando o nome da empresa
+              }),
             });
             setIsLoading(false);
             if (!response.ok) {
               const data = await response.json().catch(() => null);
-              setEmailApiError(data?.message ?? "Email já cadastrado.");
+              setEmailApiError(data?.error ?? "Email já cadastrado.");
               return;
             }
             nextStep();
           }}
           className="flex-1 h-12 rounded-xl font-semibold gap-2"
         >
-          {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</> : <>Continuar <ArrowRight className="w-4 h-4" /></>}
+          {isLoading
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+            : <>Continuar <ArrowRight className="w-4 h-4" /></>
+          }
         </Button>
       </div>
     </div>

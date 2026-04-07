@@ -11,27 +11,27 @@ import StepPlano, { planos } from "@/components/signup/StepPlano";
 import StepConfirmacao from "@/components/signup/StepConfirmacao";
 import type { SignupFormData } from "@/types";
 
-// OCP — adicionar um step exige apenas inserir um item aqui
 const steps = [
-  { id: 0, label: "Empresa",        icon: Building2 },
-  { id: 1, label: "Administrador",  icon: UserCircle },
-  { id: 2, label: "Verificação",    icon: ShieldCheck },
-  { id: 3, label: "Plano",          icon: CreditCard },
-  { id: 4, label: "Confirmação",    icon: CheckCircle2 },
+  { id: 0, label: "Empresa",       icon: Building2 },
+  { id: 1, label: "Administrador", icon: UserCircle },
+  { id: 2, label: "Verificação",   icon: ShieldCheck },
+  { id: 3, label: "Plano",         icon: CreditCard },
+  { id: 4, label: "Confirmação",   icon: CheckCircle2 },
 ];
 
 const initialFormData: SignupFormData = {
   cnpj: "", segmento: "", cidade: "", qtdQuadras: "",
+  nomeEmpresa: "",
   nome: "", email: "", telefone: "", senha: "", codigo: "",
 };
 
 const Signup = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [showPassword, setShowPassword] = useState(false);
-  const [selectedPlano, setSelectedPlano] = useState(2);
-  const [formData, setFormData] = useState<SignupFormData>(initialFormData);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [currentStep, setCurrentStep]     = useState(0);
+  const [showPassword, setShowPassword]   = useState(false);
+  const [selectedPlano, setSelectedPlano] = useState(1);
+  const [formData, setFormData]           = useState<SignupFormData>(initialFormData);
+  const [isSubmitting, setIsSubmitting]   = useState(false);
+  const [submitError, setSubmitError]     = useState<string | null>(null);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const navigate = useNavigate();
 
@@ -48,29 +48,33 @@ const Signup = () => {
     setSubmitError(null);
     try {
       const payload = {
-        cnpj: formData.cnpj,
-        segment: formData.segmento,
-        city: formData.cidade,
+        cnpj:         formData.cnpj,
+        company_name: formData.nomeEmpresa,
+        segment:      formData.segmento,
+        city:         formData.cidade,
         courts_count: formData.qtdQuadras,
-        plan: planos[selectedPlano].nome.toLowerCase(),
-        name: formData.nome,
-        email: formData.email,
-        phone: formData.telefone,
-        password: formData.senha,
+        plan:         planos[selectedPlano].nome.toLowerCase(),
+        name:         formData.nome,
+        email:        formData.email,
+        phone:        formData.telefone,
+        password:     formData.senha,
       };
 
-      const response = await fetch("http://localhost:3100/signup/register", {
+      const response = await fetch(`http://localhost:3100/signup/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
+      const data = await response.json().catch(() => null);
+
       if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.message ?? "Erro ao criar conta. Tente novamente.");
+        throw new Error(data?.error ?? "Erro ao criar conta. Tente novamente.");
       }
 
-      navigate("/login");
+      // Navigate to success page passing tenant data as state
+      navigate("/signup/success", { state: { tenant: data.tenant } });
+
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Erro ao criar conta. Tente novamente.");
     } finally {
@@ -108,7 +112,11 @@ const Signup = () => {
               className="bg-card rounded-2xl border border-border/60 p-5 sm:p-8"
             >
               {currentStep === 0 && (
-                <StepEmpresa formData={formData} updateField={updateField} nextStep={nextStep} />
+                <StepEmpresa
+                  formData={formData}
+                  updateField={updateField}
+                  nextStep={nextStep}
+                />
               )}
               {currentStep === 1 && (
                 <StepAdministrador
@@ -117,6 +125,7 @@ const Signup = () => {
                   showPassword={showPassword}
                   setShowPassword={setShowPassword}
                   isEmailVerified={isEmailVerified}
+                  companyName={formData.nomeEmpresa}  // ← adicionar essa linha
                   nextStep={nextStep}
                   prevStep={prevStep}
                 />

@@ -22,12 +22,21 @@ interface StepEmpresaProps extends Pick<StepNavProps, "nextStep"> {
   updateField: (field: keyof EmpresaFormData, value: string) => void;
 }
 
-type EmpresaErrors = { cnpj?: string; segmento?: string; cidade?: string; qtdQuadras?: string };
+// 1. nomeEmpresa adicionado nos tipos de erro
+type EmpresaErrors = {
+  nomeEmpresa?: string;
+  cnpj?: string;
+  segmento?: string;
+  cidade?: string;
+  qtdQuadras?: string;
+};
 
 const StepEmpresa = ({ formData, updateField, nextStep }: StepEmpresaProps) => {
   const { errors, touched, touch, clearError, validate } = useStepForm<EmpresaErrors>(
     () => {
       const e: EmpresaErrors = {};
+      // 2. nomeEmpresa na função de validação
+      if (!formData.nomeEmpresa?.trim()) e.nomeEmpresa = "Nome da empresa é obrigatório";
       if (!formData.cnpj) e.cnpj = "CNPJ é obrigatório";
       else if (!isCNPJValid(formData.cnpj)) e.cnpj = "CNPJ inválido";
       if (!formData.segmento) e.segmento = "Selecione um segmento";
@@ -35,8 +44,11 @@ const StepEmpresa = ({ formData, updateField, nextStep }: StepEmpresaProps) => {
       if (!formData.qtdQuadras) e.qtdQuadras = "Selecione a quantidade de quadras";
       return e;
     },
-    ["cnpj", "segmento", "cidade", "qtdQuadras"],
+    // 3. nomeEmpresa nos campos observados pelo touched
+    ["nomeEmpresa", "cnpj", "segmento", "cidade", "qtdQuadras"],
     {
+      // 4. nomeEmpresa no objeto de validação inicial
+      nomeEmpresa: !!formData.nomeEmpresa?.trim(),
       cnpj: isCNPJValid(formData.cnpj),
       segmento: !!formData.segmento,
       cidade: !!formData.cidade.trim(),
@@ -44,11 +56,13 @@ const StepEmpresa = ({ formData, updateField, nextStep }: StepEmpresaProps) => {
     }
   );
 
+  // 5. nomeEmpresa no isValid
   const isValid = {
-    cnpj: touched.cnpj && !errors.cnpj && isCNPJValid(formData.cnpj),
-    segmento: touched.segmento && !errors.segmento && !!formData.segmento,
-    cidade: touched.cidade && !errors.cidade && !!formData.cidade.trim(),
-    qtdQuadras: touched.qtdQuadras && !errors.qtdQuadras && !!formData.qtdQuadras,
+    nomeEmpresa: touched.nomeEmpresa && !errors.nomeEmpresa && !!formData.nomeEmpresa?.trim(),
+    cnpj:        touched.cnpj && !errors.cnpj && isCNPJValid(formData.cnpj),
+    segmento:    touched.segmento && !errors.segmento && !!formData.segmento,
+    cidade:      touched.cidade && !errors.cidade && !!formData.cidade.trim(),
+    qtdQuadras:  touched.qtdQuadras && !errors.qtdQuadras && !!formData.qtdQuadras,
   };
 
   return (
@@ -58,11 +72,24 @@ const StepEmpresa = ({ formData, updateField, nextStep }: StepEmpresaProps) => {
           Dados da Empresa
         </h2>
         <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-          Informe o CNPJ para validarmos sua empresa
+          Informe os dados para validarmos sua empresa
         </p>
       </div>
 
       <div className="space-y-4">
+
+        <div>
+          <FieldLabel valid={!!isValid.nomeEmpresa}>Nome da Empresa</FieldLabel>
+          <Input
+            placeholder="Ex: Arena Beach Tennis SP"
+            value={formData.nomeEmpresa}
+            onChange={(e) => { updateField("nomeEmpresa", e.target.value); clearError("nomeEmpresa"); }}
+            onBlur={() => touch("nomeEmpresa")}
+            className={getInputClass(!!errors.nomeEmpresa, !!isValid.nomeEmpresa)}
+          />
+          <FieldError message={errors.nomeEmpresa} />
+        </div>
+
         <div>
           <FieldLabel valid={!!isValid.cnpj}>CNPJ</FieldLabel>
           <Input
@@ -112,6 +139,7 @@ const StepEmpresa = ({ formData, updateField, nextStep }: StepEmpresaProps) => {
           </Select>
           <FieldError message={errors.qtdQuadras} />
         </div>
+
       </div>
 
       <Button onClick={() => { if (validate()) nextStep(); }} className="w-full h-12 rounded-xl font-semibold text-base gap-2">
