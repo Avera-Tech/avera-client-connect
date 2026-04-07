@@ -6,7 +6,7 @@ import FitFeaturesSection from "@/components/averafit/FitFeaturesSection";
 import FitSystemPreviewSection from "@/components/averafit/FitSystemPreviewSection";
 import FitHowItWorksSection from "@/components/averafit/FitHowItWorksSection";
 import FitPricingSection from "@/components/averafit/FitPricingSection";
-import FitTestimonialsSection from "@/components/averafit/FitTestimonialsSection";
+// import FitTestimonialsSection from "@/components/averafit/FitTestimonialsSection";
 import FitStatsSection from "@/components/averafit/FitStatsSection";
 import FitCtaSection from "@/components/averafit/FitCtaSection";
 import FitFooter from "@/components/averafit/FitFooter";
