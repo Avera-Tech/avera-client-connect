@@ -7,10 +7,10 @@ const plans = [
   {
     name: "Teste Grátis",
     price: "R$ 0",
-    period: "14 dias",
-    description: "Experimente todas as funcionalidades sem compromisso",
+    period: "",
+    description: "Conheça a plataforma sem compromisso",
     features: [
-      "Até 3 quadras",
+      "Até 1 quadra",
       "Agendamento online",
       "Gestão de alunos",
       "Dashboard básico",
@@ -20,11 +20,11 @@ const plans = [
   },
   {
     name: "Starter",
-    price: "R$ 197",
+    price: "R$ 149",
     period: "/mês",
     description: "Para centros esportivos em crescimento",
     features: [
-      "Até 6 quadras",
+      "Até 3 quadras",
       "Agendamento ilimitado",
       "Controle financeiro",
       "Lembretes automáticos",
@@ -35,7 +35,7 @@ const plans = [
   },
   {
     name: "Profissional",
-    price: "R$ 397",
+    price: "R$ 249",
     period: "/mês",
     description: "Gestão completa com funcionalidades avançadas",
     features: [
