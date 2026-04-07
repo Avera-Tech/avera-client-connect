@@ -23,7 +23,7 @@ const AveraFit = () => {
       <FitHowItWorksSection />
       <FitStatsSection />
       <FitPricingSection />
-      {/* <FitTestimonialsSection /> */}
+      
       <FitCtaSection />
       <FitFooter />
     </div>
