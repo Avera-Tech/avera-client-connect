@@ -23,23 +23,17 @@ interface Plano {
   id: number;
   name: string;
   price: number;
-  maxQuadras: number;
   description: string;
+  trialDays: number;
   active: boolean;
-  createdAt: string;
 }
 
 const initialPlanos: Plano[] = [
-  { id: 1, name: "Teste Grátis", price: 0, maxQuadras: 1, description: "Ideal para conhecer a plataforma", active: true, createdAt: "01/01/2026" },
-  { id: 2, name: "Starter", price: 149, maxQuadras: 3, description: "Para centros esportivos pequenos", active: true, createdAt: "01/01/2026" },
-  { id: 3, name: "Profissional", price: 249, maxQuadras: 10, description: "Para centros esportivos em crescimento", active: true, createdAt: "01/01/2026" },
-  { id: 4, name: "Enterprise", price: 499, maxQuadras: 99, description: "Para grandes operações com múltiplas unidades", active: true, createdAt: "01/01/2026" },
+  { id: 1, name: "Teste Grátis", price: 0, description: "Ideal para conhecer a plataforma", trialDays: 14, active: true },
+  { id: 2, name: "Starter", price: 149, description: "Para centros esportivos pequenos", trialDays: 7, active: true },
+  { id: 3, name: "Profissional", price: 249, description: "Para centros esportivos em crescimento", trialDays: 7, active: true },
+  { id: 4, name: "Enterprise", price: 499, description: "Para grandes operações com múltiplas unidades", trialDays: 15, active: true },
 ];
-
-const today = () => {
-  const d = new Date();
-  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-};
 
 const formatCurrency = (value: number) =>
   value === 0 ? "Grátis" : `R$ ${value.toLocaleString("pt-BR")}/mês`;
@@ -55,8 +49,8 @@ const Planos = () => {
 
   const [formName, setFormName] = useState("");
   const [formPrice, setFormPrice] = useState("");
-  const [formMaxQuadras, setFormMaxQuadras] = useState("");
   const [formDescription, setFormDescription] = useState("");
+  const [formTrialDays, setFormTrialDays] = useState("");
   const [formActive, setFormActive] = useState(true);
 
   const filtered = planos.filter((p) =>
@@ -67,8 +61,8 @@ const Planos = () => {
     setEditingPlano(null);
     setFormName("");
     setFormPrice("");
-    setFormMaxQuadras("");
     setFormDescription("");
+    setFormTrialDays("");
     setFormActive(true);
     setDialogOpen(true);
   };
@@ -77,14 +71,14 @@ const Planos = () => {
     setEditingPlano(plano);
     setFormName(plano.name);
     setFormPrice(String(plano.price));
-    setFormMaxQuadras(String(plano.maxQuadras));
     setFormDescription(plano.description);
+    setFormTrialDays(String(plano.trialDays));
     setFormActive(plano.active);
     setDialogOpen(true);
   };
 
   const handleSave = () => {
-    if (!formName.trim() || formPrice === "" || !formMaxQuadras) {
+    if (!formName.trim() || formPrice === "") {
       toast({ title: "Preencha todos os campos obrigatórios", variant: "destructive" });
       return;
     }
@@ -93,7 +87,7 @@ const Planos = () => {
       setPlanos((prev) =>
         prev.map((p) =>
           p.id === editingPlano.id
-            ? { ...p, name: formName, price: Number(formPrice), maxQuadras: Number(formMaxQuadras), description: formDescription, active: formActive }
+            ? { ...p, name: formName, price: Number(formPrice), description: formDescription, trialDays: Number(formTrialDays) || 0, active: formActive }
             : p
         )
       );
@@ -102,7 +96,7 @@ const Planos = () => {
       const newId = Math.max(...planos.map((p) => p.id), 0) + 1;
       setPlanos((prev) => [
         ...prev,
-        { id: newId, name: formName, price: Number(formPrice), maxQuadras: Number(formMaxQuadras), description: formDescription, active: formActive, createdAt: today() },
+        { id: newId, name: formName, price: Number(formPrice), description: formDescription, trialDays: Number(formTrialDays) || 0, active: formActive },
       ]);
       toast({ title: "Plano criado com sucesso" });
     }
@@ -143,29 +137,26 @@ const Planos = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Plano</TableHead>
-                  <TableHead>Preço</TableHead>
-                  <TableHead>Máx. Quadras</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Preço/mês</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Dias de Teste</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Criado em</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((plano) => (
                   <TableRow key={plano.id}>
-                    <TableCell>
-                      <div className="font-semibold text-foreground">{plano.name}</div>
-                      <div className="text-xs text-muted-foreground">{plano.description}</div>
-                    </TableCell>
+                    <TableCell className="font-semibold text-foreground">{plano.name}</TableCell>
                     <TableCell className="font-medium text-foreground">{formatCurrency(plano.price)}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">Até {plano.maxQuadras}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm max-w-[200px] truncate">{plano.description}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{plano.trialDays} dias</TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-lg ${plano.active ? "bg-accent/15 text-accent" : "bg-destructive/15 text-destructive"}`}>
                         {plano.active ? "Ativo" : "Inativo"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{plano.createdAt}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -198,7 +189,6 @@ const Planos = () => {
         </div>
       </main>
 
-      {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -206,7 +196,7 @@ const Planos = () => {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="planName">Nome do Plano</Label>
+              <Label htmlFor="planName">Nome</Label>
               <Input id="planName" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Ex: Starter" />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -215,8 +205,8 @@ const Planos = () => {
                 <Input id="planPrice" type="number" min="0" value={formPrice} onChange={(e) => setFormPrice(e.target.value)} placeholder="0" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="planQuadras">Máx. Quadras</Label>
-                <Input id="planQuadras" type="number" min="1" value={formMaxQuadras} onChange={(e) => setFormMaxQuadras(e.target.value)} placeholder="1" />
+                <Label htmlFor="planTrialDays">Dias de Teste</Label>
+                <Input id="planTrialDays" type="number" min="0" value={formTrialDays} onChange={(e) => setFormTrialDays(e.target.value)} placeholder="7" />
               </div>
             </div>
             <div className="space-y-2">
@@ -239,7 +229,6 @@ const Planos = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
       <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
