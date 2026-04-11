@@ -28,6 +28,7 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/clientes" element={<Clientes />} />
+          <Route path="/dashboard/usuarios" element={<Usuarios />} />
           <Route path="/dashboard/cobrancas" element={<Cobrancas />} />
           <Route path="/dashboard/funcionalidades" element={<Funcionalidades />} />
           <Route path="/averafit" element={<AveraFit />} />
