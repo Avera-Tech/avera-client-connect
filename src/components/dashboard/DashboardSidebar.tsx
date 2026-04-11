@@ -5,6 +5,7 @@ import {
   UserCog,
   CreditCard,
   Zap,
+  Package,
   Settings,
   LogOut,
   X,
@@ -15,7 +16,10 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Visão Geral", path: "/dashboard" },
   { icon: Users, label: "Clientes", path: "/dashboard/clientes" },
   { icon: UserCog, label: "Usuários", path: "/dashboard/usuarios" },
+  { icon: Package, label: "Planos", path: "/dashboard/planos" },
   { icon: CreditCard, label: "Cobranças", path: "/dashboard/cobrancas" },
+  { icon: Zap, label: "Funcionalidades", path: "/dashboard/funcionalidades" },
+  { icon: Settings, label: "Configurações", path: "/dashboard/configuracoes" },
   { icon: Zap, label: "Funcionalidades", path: "/dashboard/funcionalidades" },
   { icon: Settings, label: "Configurações", path: "/dashboard/configuracoes" },
 ];
