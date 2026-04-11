@@ -11,17 +11,16 @@ import {
   X,
 } from "lucide-react";
 import logoImg from "@/assets/avera-logo.png";
+import { adminToken } from "@/services/adminApi";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Visão Geral", path: "/dashboard" },
-  { icon: Users, label: "Clientes", path: "/dashboard/clientes" },
-  { icon: UserCog, label: "Usuários", path: "/dashboard/usuarios" },
-  { icon: Package, label: "Planos", path: "/dashboard/planos" },
-  { icon: CreditCard, label: "Cobranças", path: "/dashboard/cobrancas" },
-  { icon: Zap, label: "Funcionalidades", path: "/dashboard/funcionalidades" },
-  { icon: Settings, label: "Configurações", path: "/dashboard/configuracoes" },
-  { icon: Zap, label: "Funcionalidades", path: "/dashboard/funcionalidades" },
-  { icon: Settings, label: "Configurações", path: "/dashboard/configuracoes" },
+  { icon: LayoutDashboard, label: "Visão Geral",     path: "/dashboard" },
+  { icon: Users,           label: "Clientes",        path: "/dashboard/clientes" },
+  { icon: UserCog,         label: "Usuários",        path: "/dashboard/usuarios" },
+  { icon: Package,         label: "Planos",          path: "/dashboard/planos" },
+  { icon: CreditCard,      label: "Cobranças",       path: "/dashboard/cobrancas" },
+  { icon: Zap,             label: "Funcionalidades", path: "/dashboard/funcionalidades" },
+  { icon: Settings,        label: "Configurações",   path: "/dashboard/configuracoes" },
 ];
 
 interface SidebarContentProps {
@@ -29,8 +28,14 @@ interface SidebarContentProps {
 }
 
 export const SidebarContent = ({ onClose }: SidebarContentProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+
+  const handleLogout = () => {
+    adminToken.remove();
+    navigate("/login", { replace: true });
+    onClose?.();
+  };
 
   return (
     <>
@@ -43,7 +48,7 @@ export const SidebarContent = ({ onClose }: SidebarContentProps) => {
           const isActive = location.pathname === item.path;
           return (
             <button
-              key={item.label}
+              key={item.path}
               onClick={() => {
                 navigate(item.path);
                 onClose?.();
@@ -63,7 +68,7 @@ export const SidebarContent = ({ onClose }: SidebarContentProps) => {
 
       <div className="p-4 border-t border-primary/10">
         <button
-          onClick={() => navigate("/login")}
+          onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-hero-foreground/40 hover:text-hero-foreground hover:bg-hero-foreground/5 transition-all"
         >
           <LogOut className="w-5 h-5" />

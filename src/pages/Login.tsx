@@ -6,15 +6,38 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import logoImg from "@/assets/avera-logo.png";
 import heroBg from "@/assets/hero-bg.jpg";
+import { adminAuthApi, adminToken } from "@/services/adminApi";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail]               = useState("");
+  const [password, setPassword]         = useState("");
+  const [isLoading, setIsLoading]       = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/dashboard");
+
+    if (!email.trim() || !password) {
+      toast({ title: "Preencha e-mail e senha.", variant: "destructive" });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await adminAuthApi.login({ email: email.trim(), password });
+      adminToken.set(res.token);
+      navigate("/dashboard", { replace: true });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro ao fazer login.";
+      toast({ title: message, variant: "destructive" });
+      // Limpa a senha por segurança após erro
+      setPassword("");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,49 +93,40 @@ const Login = () => {
 
           <div className="mb-10">
             <h1 className="font-display text-3xl font-extrabold text-foreground tracking-tight mb-2">
-              {isSignUp ? "Criar conta" : "Entrar"}
+              Entrar
             </h1>
             <p className="text-muted-foreground font-light">
-              {isSignUp
-                ? "Preencha seus dados para criar sua conta"
-                : "Acesse sua conta para continuar"}
+              Acesse sua conta para continuar
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {isSignUp && (
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Nome completo</label>
-                <Input
-                  placeholder="Seu nome"
-                  className="h-13 rounded-xl bg-card border-border/60 focus:border-primary/50 focus:ring-primary/20"
-                />
-              </div>
-            )}
-
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
               <Input
                 type="email"
-                placeholder="seu@email.com"
+                placeholder="seu@avera.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-13 rounded-xl bg-card border-border/60 focus:border-primary/50 focus:ring-primary/20"
+                autoComplete="email"
+                disabled={isLoading}
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-sm font-medium text-foreground">Senha</label>
-                {!isSignUp && (
-                  <button type="button" className="text-xs text-primary hover:underline">
-                    Esqueceu a senha?
-                  </button>
-                )}
               </div>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="h-13 rounded-xl bg-card border-border/60 pr-12 focus:border-primary/50 focus:ring-primary/20"
+                  autoComplete="current-password"
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -124,23 +138,17 @@ const Login = () => {
               </div>
             </div>
 
-            <Button type="submit" variant="default" size="lg" className="w-full rounded-xl h-13 font-semibold text-base">
-              {isSignUp ? "Criar conta" : "Entrar"}
-              <ArrowRight className="ml-2 w-4 h-4" />
+            <Button
+              type="submit"
+              variant="default"
+              size="lg"
+              className="w-full rounded-xl h-13 font-semibold text-base"
+              disabled={isLoading}
+            >
+              {isLoading ? "Entrando..." : "Entrar"}
+              {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
             </Button>
           </form>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              {isSignUp ? "Já tem uma conta?" : "Não tem uma conta?"}{" "}
-              <button
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-primary font-semibold hover:underline"
-              >
-                {isSignUp ? "Entrar" : "Criar conta"}
-              </button>
-            </p>
-          </div>
         </motion.div>
       </div>
     </div>
