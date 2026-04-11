@@ -11,6 +11,7 @@ import Clientes from "./pages/Clientes";
 import Cobrancas from "./pages/Cobrancas";
 import Funcionalidades from "./pages/Funcionalidades";
 import Usuarios from "./pages/Usuarios";
+import Planos from "./pages/Planos";
 import NotFound from "./pages/NotFound";
 import AveraFit from "./pages/AveraFit";
 
