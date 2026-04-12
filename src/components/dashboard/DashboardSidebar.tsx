@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import logoImg from "@/assets/avera-logo.png";
-import { adminToken } from "@/services/adminApi";
+import { adminToken } from "@/services/httpClient";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Visão Geral",     path: "/dashboard" },
