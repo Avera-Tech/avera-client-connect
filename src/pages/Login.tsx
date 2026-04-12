@@ -6,8 +6,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import logoImg from "@/assets/avera-logo.png";
 import heroBg from "@/assets/hero-bg.jpg";
-import { adminAuthApi, adminToken } from "@/services/adminApi";
 import { useToast } from "@/hooks/use-toast";
+import { adminAuthApi } from "@/services/authService";
+import { adminToken } from "@/services/httpClient";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
