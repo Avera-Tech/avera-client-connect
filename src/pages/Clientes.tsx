@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Users,
@@ -7,66 +7,130 @@ import {
   Clock,
   AlertTriangle,
   Eye,
+  ShieldAlert,
+  X,
+  Building2,
+  MapPin,
+  Phone,
+  CreditCard,
+  Layers,
+  Calendar,
+  User,
+  Mail,
+  Zap,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import { useAdminTenants, useAdminTenant } from "@/hooks/useTenants";
+import type { TenantStatus, TenantPlan } from "@/services/tenantsService";
 
-type FilterStatus = "all" | "Ativo" | "Trial" | "Inadimplente" | "Cancelado";
+// ─── Mapeamento API → visual ──────────────────────────────────────────────────
+// A API usa: active | pending | pending_provision | suspended | cancelled
+// A página usa: Ativo | Trial | Inadimplente | Cancelado
 
-const clients = [
-  { id: 1, name: "Arena Beach Sports", cnpj: "12.345.678/0001-90", city: "São Paulo", segment: "Beach Tennis", plan: "Profissional", status: "Ativo", quadras: 8, since: "01/09/2025" },
-  { id: 2, name: "Centro Esportivo Vitória", cnpj: "23.456.789/0001-01", city: "Campinas", segment: "Multiesportivo", plan: "Starter", status: "Trial", quadras: 4, since: "20/03/2026" },
-  { id: 3, name: "Quadra10 Sports", cnpj: "34.567.890/0001-12", city: "Belo Horizonte", segment: "Padel", plan: "Profissional", status: "Ativo", quadras: 6, since: "15/01/2026" },
-  { id: 4, name: "Play Tennis Club", cnpj: "45.678.901/0001-23", city: "Curitiba", segment: "Tênis", plan: "Teste Grátis", status: "Trial", quadras: 3, since: "15/03/2026" },
-  { id: 5, name: "Arena Vôlei SP", cnpj: "56.789.012/0001-34", city: "São Paulo", segment: "Vôlei", plan: "Enterprise", status: "Ativo", quadras: 12, since: "01/06/2025" },
-  { id: 6, name: "Sport Center Rio", cnpj: "67.890.123/0001-45", city: "Rio de Janeiro", segment: "Futevôlei", plan: "Profissional", status: "Inadimplente", quadras: 5, since: "01/08/2025" },
-  { id: 7, name: "Ace Padel Club", cnpj: "78.901.234/0001-56", city: "Florianópolis", segment: "Padel", plan: "Starter", status: "Ativo", quadras: 4, since: "01/11/2025" },
-  { id: 8, name: "Top Tennis Academy", cnpj: "89.012.345/0001-67", city: "Porto Alegre", segment: "Tênis", plan: "Profissional", status: "Cancelado", quadras: 6, since: "01/03/2025" },
-];
+type VisualStatus = "all" | "active" | "pending" | "suspended" | "cancelled";
 
-const statusBadge = (status: string) => {
-  if (status === "Ativo") return "bg-accent/15 text-accent";
-  if (status === "Trial") return "bg-primary/15 text-primary";
-  if (status === "Inadimplente") return "bg-destructive/15 text-destructive";
+const STATUS_LABEL: Record<TenantStatus, string> = {
+  active:            "Ativo",
+  pending:           "Trial",
+  pending_provision: "Trial",
+  suspended:         "Inadimplente",
+  cancelled:         "Cancelado",
+};
+
+const PLAN_LABEL: Record<TenantPlan, string> = {
+  starter:      "Starter",
+  professional: "Profissional",
+  enterprise:   "Enterprise",
+};
+
+const formatCnpj = (cnpj: string) =>
+  cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+
+const statusBadge = (status: TenantStatus) => {
+  if (status === "active")                         return "bg-accent/15 text-accent";
+  if (status === "pending" || status === "pending_provision") return "bg-primary/15 text-primary";
+  if (status === "suspended")                      return "bg-destructive/15 text-destructive";
   return "bg-muted text-muted-foreground";
 };
 
-const statusIcon = (status: string) => {
-  if (status === "Ativo") return <CheckCircle2 className="w-3.5 h-3.5" />;
-  if (status === "Trial") return <Clock className="w-3.5 h-3.5" />;
-  if (status === "Inadimplente") return <AlertTriangle className="w-3.5 h-3.5" />;
+const statusIcon = (status: TenantStatus) => {
+  if (status === "active")                         return <CheckCircle2 className="w-3.5 h-3.5" />;
+  if (status === "pending" || status === "pending_provision") return <Clock className="w-3.5 h-3.5" />;
+  if (status === "suspended")                      return <AlertTriangle className="w-3.5 h-3.5" />;
   return null;
 };
 
+// ─── Componente ───────────────────────────────────────────────────────────────
+
 const Clientes = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [filter, setFilter] = useState<FilterStatus>("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
+  const [searchTerm, setSearchTerm]       = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedId, setSelectedId]       = useState<number | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filtered = clients.filter((c) => {
-    const matchStatus = filter === "all" || c.status === filter;
-    const matchSearch =
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.cnpj.includes(searchTerm) ||
-      c.city.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchStatus && matchSearch;
-  });
+  // ── Filtros refletidos na URL ──────────────────────────────────────────────
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const counts = {
-    all: clients.length,
-    Ativo: clients.filter((c) => c.status === "Ativo").length,
-    Trial: clients.filter((c) => c.status === "Trial").length,
-    Inadimplente: clients.filter((c) => c.status === "Inadimplente").length,
-    Cancelado: clients.filter((c) => c.status === "Cancelado").length,
+  const statusParam = searchParams.get("status") as TenantStatus | null;
+  const planParam   = searchParams.get("plan")   as TenantPlan   | null;
+
+  const setFilter = (status: VisualStatus) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (status === "all") next.delete("status");
+      else next.set("status", status);
+      return next;
+    }, { replace: true });
   };
 
-  const filterTabs: { label: string; value: FilterStatus; count: number }[] = [
-    { label: "Todos", value: "all", count: counts.all },
-    { label: "Ativos", value: "Ativo", count: counts.Ativo },
-    { label: "Trial", value: "Trial", count: counts.Trial },
-    { label: "Inadimplentes", value: "Inadimplente", count: counts.Inadimplente },
-    { label: "Cancelados", value: "Cancelado", count: counts.Cancelado },
+  const setPlanFilter = (plan: TenantPlan | undefined) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (!plan) next.delete("plan");
+      else next.set("plan", plan);
+      return next;
+    }, { replace: true });
+  };
+
+  // ── Debounce da busca ──────────────────────────────────────────────────────
+  const handleSearch = useCallback((value: string) => {
+    setSearchTerm(value);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => setDebouncedSearch(value), 400);
+  }, []);
+
+  // ── Query ──────────────────────────────────────────────────────────────────
+  // statusParam null = sem filtro (Todos), string = filtro ativo
+  const { data, isLoading, isError } = useAdminTenants({
+    search: debouncedSearch || undefined,
+    status: statusParam ?? undefined,
+    plan:   planParam   ?? undefined,
+    limit:  50,
+  });
+
+  const tenants = data?.data ?? [];
+  const total   = data?.meta?.total ?? 0;
+
+  // ── Detalhes ───────────────────────────────────────────────────────────────
+  const { data: detail, isLoading: loadingDetail } = useAdminTenant(selectedId);
+
+  const filterTabs: { label: string; value: VisualStatus }[] = [
+    { label: "Todos",         value: "all"       },
+    { label: "Ativos",        value: "active"    },
+    { label: "Trial",         value: "pending"   },
+    { label: "Inadimplentes", value: "suspended" },
+    { label: "Cancelados",    value: "cancelled" },
   ];
+
+  // Tab ativa — null no param = "all"
+  const activeFilter: VisualStatus = (statusParam as VisualStatus) ?? "all";
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -86,36 +150,80 @@ const Clientes = () => {
             </p>
           </motion.div>
 
-          {/* Filters */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="flex flex-col sm:flex-row gap-3 mb-6">
+          {/* Erro */}
+          {isError && (
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm mb-6">
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              Erro ao carregar clientes. Verifique sua conexão e tente novamente.
+            </div>
+          )}
+
+          {/* Filtros */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="flex flex-col sm:flex-row gap-3 mb-4"
+          >
+            {/* Tabs de status */}
             <div className="flex gap-1 p-1 bg-muted/50 rounded-xl border border-border/60 overflow-x-auto">
               {filterTabs.map((tab) => (
                 <button
                   key={tab.value}
                   onClick={() => setFilter(tab.value)}
                   className={`px-4 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                    filter === tab.value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    activeFilter === tab.value
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {tab.label}
-                  <span className="ml-1.5 text-[10px] opacity-60">{tab.count}</span>
                 </button>
               ))}
             </div>
+
+            {/* Busca */}
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 placeholder="Buscar por nome, CNPJ ou cidade..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="h-10 pl-10 pr-4 rounded-xl bg-card border border-border/60 text-sm w-full focus:outline-none focus:border-primary/40 transition-colors"
               />
             </div>
           </motion.div>
 
-          {/* Client table */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl bg-card border border-border/60 overflow-hidden">
-            {/* Header row */}
+          {/* Filtro de plano */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="flex gap-2 mb-6"
+          >
+            {([undefined, "starter", "professional", "enterprise"] as const).map((plan) => (
+              <button
+                key={plan ?? "all"}
+                onClick={() => setPlanFilter(plan)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  planParam === plan
+                    ? "bg-primary/15 text-primary border-primary/30"
+                    : "bg-card text-muted-foreground border-border/60 hover:text-foreground"
+                }`}
+              >
+                {plan ? PLAN_LABEL[plan] : "Todos os planos"}
+              </button>
+            ))}
+          </motion.div>
+
+          {/* Tabela */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl bg-card border border-border/60 overflow-hidden"
+          >
+            {/* Header */}
             <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_80px_60px] gap-4 px-5 py-3 border-b border-border/60 text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <span>Centro Esportivo</span>
               <span>Plano</span>
@@ -126,31 +234,238 @@ const Clientes = () => {
             </div>
 
             <div className="divide-y divide-border/40">
-              {filtered.map((client) => (
-                <div key={client.id} className="px-5 py-4 md:grid md:grid-cols-[2fr_1fr_1fr_1fr_80px_60px] md:gap-4 md:items-center flex flex-col gap-2 hover:bg-muted/30 transition-colors">
-                  <div>
-                    <div className="font-semibold text-foreground text-sm">{client.name}</div>
-                    <div className="text-xs text-muted-foreground">{client.cnpj} · {client.segment}</div>
+
+              {/* Skeleton */}
+              {isLoading && [...Array(6)].map((_, i) => (
+                <div key={i} className="px-5 py-4 md:grid md:grid-cols-[2fr_1fr_1fr_1fr_80px_60px] md:gap-4 md:items-center animate-pulse">
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-40 bg-muted/60 rounded" />
+                    <div className="h-3 w-56 bg-muted/40 rounded" />
                   </div>
-                  <div className="text-sm text-foreground">{client.plan}</div>
-                  <div className="text-sm text-muted-foreground">{client.city}</div>
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg w-fit ${statusBadge(client.status)}`}>
-                    {statusIcon(client.status)}
-                    {client.status}
+                  <div className="h-3.5 w-20 bg-muted/40 rounded" />
+                  <div className="h-3.5 w-24 bg-muted/40 rounded" />
+                  <div className="h-6 w-20 bg-muted/40 rounded-lg" />
+                  <div className="h-3.5 w-8 bg-muted/40 rounded" />
+                  <div className="h-8 w-8 bg-muted/30 rounded-lg" />
+                </div>
+              ))}
+
+              {/* Dados reais */}
+              {!isLoading && tenants.map((tenant) => (
+                <div
+                  key={tenant.id}
+                  className="px-5 py-4 md:grid md:grid-cols-[2fr_1fr_1fr_1fr_80px_60px] md:gap-4 md:items-center flex flex-col gap-2 hover:bg-muted/30 transition-colors"
+                >
+                  <div>
+                    <div className="font-semibold text-foreground text-sm">{tenant.company_name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatCnpj(tenant.cnpj)} · {tenant.segment}
+                    </div>
+                  </div>
+                  <div className="text-sm text-foreground">{PLAN_LABEL[tenant.plan] || "não definido"}</div>
+                  <div className="text-sm text-muted-foreground">{tenant.city}</div>
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg w-fit ${statusBadge(tenant.status)}`}>
+                    {statusIcon(tenant.status)}
+                    {STATUS_LABEL[tenant.status]}
                   </span>
-                  <div className="text-sm text-foreground">{client.quadras}</div>
-                  <button className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors" title="Ver detalhes">
+                  <div className="text-sm text-foreground">{tenant.courts_count}</div>
+                  <button
+                    onClick={() => setSelectedId(tenant.id)}
+                    className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors"
+                    title="Ver detalhes"
+                  >
                     <Eye className="w-4 h-4 text-muted-foreground" />
                   </button>
                 </div>
               ))}
-              {filtered.length === 0 && (
-                <div className="px-6 py-12 text-center text-muted-foreground text-sm">Nenhum cliente encontrado.</div>
+
+              {/* Empty state */}
+              {!isLoading && tenants.length === 0 && (
+                <div className="px-6 py-12 text-center text-muted-foreground text-sm">
+                  Nenhum cliente encontrado.
+                </div>
               )}
             </div>
           </motion.div>
+
+          {/* Meta */}
+          {data?.meta && (
+            <p className="text-xs text-muted-foreground mt-3 text-right">
+              {total} cliente{total !== 1 ? "s" : ""} encontrado{total !== 1 ? "s" : ""}
+            </p>
+          )}
         </div>
       </main>
+      {/* ── Modal de Detalhes ─────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {selectedId !== null && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-foreground/50 backdrop-blur-sm"
+              onClick={() => setSelectedId(null)}
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              className="relative w-full max-w-lg bg-card rounded-2xl border border-border/60 shadow-2xl overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  {loadingDetail ? "Carregando..." : detail?.data?.company_name}
+                </h2>
+                <button
+                  onClick={() => setSelectedId(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Content */}
+              {loadingDetail ? (
+                <div className="p-6 space-y-4 animate-pulse">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-4 bg-muted/60 rounded w-3/4" />
+                  ))}
+                </div>
+              ) : detail?.data ? (
+                <div className="p-6 overflow-y-auto max-h-[70vh]">
+                  {/* Badge de status */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg ${statusBadge(detail.data.status)}`}>
+                      {statusIcon(detail.data.status)}
+                      {STATUS_LABEL[detail.data.status]}
+                    </span>
+                    <span className="text-xs text-muted-foreground px-2.5 py-1 rounded-lg bg-muted/50">
+                      {PLAN_LABEL[detail.data.plan] || "Não definido"}
+                    </span>
+                  </div>
+
+                  {/* Dados do tenant */}
+                  <div className="space-y-3 mb-6">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                      Dados do Centro
+                    </h3>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/30">
+                        <Building2 className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">CNPJ</p>
+                          <p className="text-sm font-medium text-foreground">{formatCnpj(detail.data.cnpj)}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/30">
+                        <Layers className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Segmento</p>
+                          <p className="text-sm font-medium text-foreground">{detail.data.segment}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/30">
+                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Cidade</p>
+                          <p className="text-sm font-medium text-foreground">{detail.data.city}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/30">
+                        <CreditCard className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Quadras</p>
+                          <p className="text-sm font-medium text-foreground">{detail.data.courts_count}</p>
+                        </div>
+                      </div>
+
+                      {detail.data.phone && (
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/30">
+                          <Phone className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Telefone</p>
+                            <p className="text-sm font-medium text-foreground">{detail.data.phone}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {detail.data.trial_ends_at && (
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/30">
+                          <Calendar className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Trial até</p>
+                            <p className="text-sm font-medium text-foreground">
+                              {new Date(detail.data.trial_ends_at).toLocaleDateString("pt-BR")}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Admin do tenant */}
+                  {detail.data.admin_user && (
+                    <div className="mb-6">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                        Administrador
+                      </h3>
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
+                          {detail.data.admin_user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            <p className="text-sm font-medium text-foreground truncate">{detail.data.admin_user.name}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                            <p className="text-xs text-muted-foreground truncate">{detail.data.admin_user.email}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Features */}
+                  {detail.data.features && detail.data.features.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                        Funcionalidades
+                      </h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {detail.data.features.map((f) => (
+                          <div
+                            key={f.feature_name}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${
+                              f.enabled
+                                ? "bg-accent/10 text-accent"
+                                : "bg-muted/40 text-muted-foreground"
+                            }`}
+                          >
+                            <Zap className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{f.feature_name.replace(/_/g, " ")}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
