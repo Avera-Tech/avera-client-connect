@@ -16,10 +16,9 @@ export function useAdminTenants(params: ListTenantsParams = {}) {
     queryKey: [QUERY_KEY, { search, limit, plan, status, page }],
     queryFn:  () => adminTenantsApi.list(params),
     staleTime: 30_000,
-    retry: (failureCount, error: unknown) => {
+    retry: (error: unknown) => {
       const msg = error instanceof Error ? error.message : '';
       if (msg.includes('401') || msg.includes('403') || msg.includes('Sessão')) return false;
-      return failureCount < 2;
     },
   });
 }
