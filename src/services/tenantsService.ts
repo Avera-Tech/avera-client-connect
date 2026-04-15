@@ -94,6 +94,6 @@ export const adminTenantsApi = {
   getById: (id: number): Promise<TenantDetailResponse> =>
     request<TenantDetailResponse>(`/admin/tenants/${id}`),
 
-  sendInvite: (email: string): Promise<{ success: boolean; message?: string }> =>
-    request('/admin/invites', { method: 'POST', body: { email } }),
+  sendInvite: (email: string, name: string): Promise<{ success: boolean; message?: string }> =>
+    request('/admin/invites', { method: 'POST', body: { email, name } }),
 };

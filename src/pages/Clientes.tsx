@@ -77,6 +77,7 @@ const Clientes = () => {
   // ── Modal de convite ──────────────────────────────────────────────────────
   const [inviteOpen, setInviteOpen]       = useState(false);
   const [inviteEmail, setInviteEmail]     = useState("");
+  const [inviteName, setInviteName]       = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError]     = useState<string | null>(null);
   const [inviteSuccess, setInviteSuccess] = useState(false);
@@ -86,9 +87,10 @@ const Clientes = () => {
     setInviteError(null);
     setInviteLoading(true);
     try {
-      await adminTenantsApi.sendInvite(inviteEmail);
+      await adminTenantsApi.sendInvite(inviteEmail, inviteName);
       setInviteSuccess(true);
       setInviteEmail("");
+      setInviteName("");
     } catch (err: unknown) {
       setInviteError(err instanceof Error ? err.message : "Erro ao enviar convite.");
     } finally {
@@ -99,6 +101,7 @@ const Clientes = () => {
   const closeInviteModal = () => {
     setInviteOpen(false);
     setInviteEmail("");
+    setInviteName("");
     setInviteError(null);
     setInviteSuccess(false);
   };
@@ -393,6 +396,23 @@ const Clientes = () => {
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-foreground uppercase tracking-wide">
+                        Nome
+                      </label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="João Silva"
+                          value={inviteName}
+                          onChange={(e) => setInviteName(e.target.value)}
+                          className="h-10 w-full pl-10 pr-4 rounded-xl bg-muted/40 border border-border/60 text-sm focus:outline-none focus:border-primary/40 transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-foreground uppercase tracking-wide">
                         E-mail
                       </label>
                       <div className="relative">
@@ -425,7 +445,7 @@ const Clientes = () => {
                       </button>
                       <button
                         type="submit"
-                        disabled={inviteLoading || !inviteEmail}
+                        disabled={inviteLoading || !inviteEmail || !inviteName}
                         className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                       >
                         {inviteLoading ? (
