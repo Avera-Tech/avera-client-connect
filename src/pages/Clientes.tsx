@@ -18,12 +18,15 @@ import {
   User,
   Mail,
   Zap,
+  UserPlus,
+  Send,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { useAdminTenants, useAdminTenant } from "@/hooks/useTenants";
 import type { TenantStatus, TenantPlan } from "@/services/tenantsService";
+import { adminTenantsApi } from "@/services/tenantsService";
 
 // ─── Mapeamento API → visual ──────────────────────────────────────────────────
 // A API usa: active | pending | pending_provision | suspended | cancelled
@@ -70,6 +73,35 @@ const Clientes = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedId, setSelectedId]       = useState<number | null>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Modal de convite ──────────────────────────────────────────────────────
+  const [inviteOpen, setInviteOpen]       = useState(false);
+  const [inviteEmail, setInviteEmail]     = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError]     = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess] = useState(false);
+
+  const handleInviteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviteError(null);
+    setInviteLoading(true);
+    try {
+      await adminTenantsApi.sendInvite(inviteEmail);
+      setInviteSuccess(true);
+      setInviteEmail("");
+    } catch (err: unknown) {
+      setInviteError(err instanceof Error ? err.message : "Erro ao enviar convite.");
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const closeInviteModal = () => {
+    setInviteOpen(false);
+    setInviteEmail("");
+    setInviteError(null);
+    setInviteSuccess(false);
+  };
 
   // ── Filtros refletidos na URL ──────────────────────────────────────────────
   const [searchParams, setSearchParams] = useSearchParams();
@@ -141,9 +173,18 @@ const Clientes = () => {
 
         <div className="p-6 lg:p-8 max-w-6xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-            <div className="flex items-center gap-3 mb-1">
-              <Users className="w-7 h-7 text-primary" />
-              <h1 className="font-display text-3xl font-extrabold text-foreground tracking-tight">Clientes</h1>
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <div className="flex items-center gap-3">
+                <Users className="w-7 h-7 text-primary" />
+                <h1 className="font-display text-3xl font-extrabold text-foreground tracking-tight">Clientes</h1>
+              </div>
+              <button
+                onClick={() => setInviteOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                <UserPlus className="w-4 h-4" />
+                Novo Cliente
+              </button>
             </div>
             <p className="text-muted-foreground font-light">
               Gerencie todos os centros esportivos cadastrados na plataforma.
@@ -296,6 +337,113 @@ const Clientes = () => {
           )}
         </div>
       </main>
+      {/* ── Modal de Convite ──────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {inviteOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-foreground/50 backdrop-blur-sm"
+              onClick={closeInviteModal}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              className="relative w-full max-w-sm bg-card rounded-2xl border border-border/60 shadow-2xl overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-lg font-bold text-foreground">Novo Cliente</h2>
+                </div>
+                <button
+                  onClick={closeInviteModal}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                {inviteSuccess ? (
+                  <div className="flex flex-col items-center gap-3 py-4 text-center">
+                    <div className="w-12 h-12 rounded-full bg-accent/15 flex items-center justify-center">
+                      <CheckCircle2 className="w-6 h-6 text-accent" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">Convite enviado com sucesso!</p>
+                    <p className="text-xs text-muted-foreground">O cliente receberá um e-mail para criar sua conta.</p>
+                    <button
+                      onClick={closeInviteModal}
+                      className="mt-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleInviteSubmit} className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Informe o e-mail do responsável para enviar o convite de cadastro.
+                    </p>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-foreground uppercase tracking-wide">
+                        E-mail
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                          type="email"
+                          required
+                          placeholder="contato@empresa.com.br"
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                          className="h-10 w-full pl-10 pr-4 rounded-xl bg-muted/40 border border-border/60 text-sm focus:outline-none focus:border-primary/40 transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    {inviteError && (
+                      <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                        <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                        {inviteError}
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={closeInviteModal}
+                        className="flex-1 h-10 rounded-xl border border-border/60 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={inviteLoading || !inviteEmail}
+                        className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                      >
+                        {inviteLoading ? (
+                          <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                        ) : (
+                          <Send className="w-3.5 h-3.5" />
+                        )}
+                        Enviar Convite
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* ── Modal de Detalhes ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {selectedId !== null && (
