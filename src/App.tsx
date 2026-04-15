@@ -12,6 +12,7 @@ import Cobrancas from "./pages/Cobrancas";
 import Funcionalidades from "./pages/Funcionalidades";
 import Usuarios from "./pages/Usuarios";
 import Planos from "./pages/Planos";
+import EmailTemplate from "./pages/EmailTemplate";
 import NotFound from "./pages/NotFound";
 import AveraFit from "./pages/AveraFit";
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/dashboard/planos" element={<Planos />} />
           <Route path="/dashboard/cobrancas" element={<Cobrancas />} />
           <Route path="/dashboard/funcionalidades" element={<Funcionalidades />} />
+          <Route path="/dashboard/email-template" element={<EmailTemplate />} />
           <Route path="/averafit" element={<AveraFit />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
